@@ -27,25 +27,28 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create a new task
+
+
 router.post('/', async (req, res) => {
   try {
-    const task = new Task(req.body);
-    const savedTask = await task.save();
+    // Forward the request to the external API
+    const response = await axios.post(
+      'https://task-calender-backend-git-main-nithin2023-creators-projects.vercel.app/tasks',
+      req.body,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
 
-    // Send the task to the second app
-    const secondAppUrl = 'https://task-calender-backend-git-main-nithin2023-creators-projects.vercel.app/tasks'; // Replace with your second app's URL
-    await axios.post(secondAppUrl, {
-      date: savedTask.dueDate.split('T')[0], // Extract the date (YYYY-MM-DD)
-      category: savedTask.category || 'General', // Default category
-      title: savedTask.title,
-      description: savedTask.description,
-    });
-
-    res.status(201).json(savedTask);
+    // Send back the response from the external API
+    res.status(response.status).json(response.data);
   } catch (error) {
-    res.status(400).json({ message: 'Failed to create task', error: error.message });
+    res.status(500).json({
+      message: 'Failed to forward request',
+      error: error.response ? error.response.data : error.message
+    });
   }
 });
+
+
 
 // Update a task
 router.put('/:id', async (req, res) => {
