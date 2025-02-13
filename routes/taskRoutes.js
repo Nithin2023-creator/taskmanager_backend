@@ -27,40 +27,15 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create a new task
-
-
-
-
 router.post('/', async (req, res) => {
   try {
-    // Extract fields from request body
-    console.log('testingfrombackend','req.body)');
-    const { date, category, title, description } = req.body;
-    
-    // Validate required fields
-    if (!date || !category || !title || !description) {
-      return res.status(400).json({ error: 'Missing required fields: date, category, title, description' });
-    }
-
-    // Send request to the external API
-    const response = await axios.post(
-      'https://task-calender-backend-git-main-nithin2023-creators-projects.vercel.app/tasks',
-      { date, category, title, description }, // Ensuring correct structure
-      { headers: { 'Content-Type': 'application/json' } }
-    );
-
-    // Send the response back to the client
-    res.status(201).json({ message: 'Task added successfully', data: response.data });
-
+    const task = new Task(req.body);
+    const savedTask = await task.save();
+    res.status(201).json(savedTask);
   } catch (error) {
-    console.error('Error adding task:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Failed to add task', details: error.response ? error.response.data : error.message });
+    res.status(400).json({ message: 'Failed to create task', error: error.message });
   }
 });
-
-
-
-
 
 // Update a task
 router.put('/:id', async (req, res) => {
