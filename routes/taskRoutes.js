@@ -35,7 +35,7 @@ router.post('/', async (req, res) => {
   try {
     // Extract fields from request body
     const { date, category, title, description } = req.body;
-    console.log(date, category, title, description);
+    console.log('testingfrombackend','req.body)',req.body);
     // Validate required fields
     if (!date || !category || !title || !description) {
       return res.status(400).json({ error: 'Missing required fields: date, category, title, description' });
