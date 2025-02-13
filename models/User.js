@@ -1,5 +1,10 @@
+// models/User.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+
+// Clear existing model if it exists
+mongoose.models = {};
+mongoose.modelSchemas = {};
 
 const userSchema = new mongoose.Schema({
   email: { 
@@ -7,14 +12,25 @@ const userSchema = new mongoose.Schema({
     required: true, 
     unique: true,
     trim: true,
-    lowercase: true
+    lowercase: true,
+    index: true // Add explicit index
   },
   password: { 
     type: String, 
     required: true,
     minlength: 6
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
+}, {
+  // Add this to ensure Mongoose doesn't add any indexes we don't explicitly define
+  autoIndex: false 
 });
+
+// Create index programmatically
+userSchema.index({ email: 1 }, { unique: true });
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {
@@ -29,4 +45,13 @@ userSchema.methods.comparePassword = async function(password) {
   return bcrypt.compare(password, this.password);
 };
 
-module.exports = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
+// Ensure indexes are created properly
+User.syncIndexes().then(() => {
+  console.log('User indexes synchronized');
+}).catch(err => {
+  console.error('Error synchronizing indexes:', err);
+});
+
+module.exports = User;
