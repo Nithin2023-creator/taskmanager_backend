@@ -9,6 +9,11 @@ const taskSchema = new mongoose.Schema({
     default: 'Pending',
   },
   dueDate: { type: Date, required: true },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: 'User'
+  }
 });
 
 module.exports = mongoose.model('Task', taskSchema);

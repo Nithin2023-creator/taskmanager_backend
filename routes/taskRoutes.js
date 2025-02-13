@@ -1,22 +1,25 @@
 const express = require('express');
 const Task = require('../models/Task');
-
+const auth = require('../middleware/auth');
 const router = express.Router();
 
-// Get all tasks
+// All routes now require authentication
+router.use(auth);
+
+// Get all tasks (only user's tasks)
 router.get('/', async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const tasks = await Task.find({ owner: req.user._id });
     res.status(200).json(tasks);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch tasks', error: error.message });
   }
 });
 
-// Get a task by ID
+// Get a task by ID (only if owned by user)
 router.get('/:id', async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findOne({ _id: req.params.id, owner: req.user._id });
     if (!task) {
       return res.status(404).json({ message: 'Task not found' });
     }
@@ -26,10 +29,13 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create a new task
+// Create a new task (with owner)
 router.post('/', async (req, res) => {
   try {
-    const task = new Task(req.body);
+    const task = new Task({
+      ...req.body,
+      owner: req.user._id
+    });
     const savedTask = await task.save();
     res.status(201).json(savedTask);
   } catch (error) {
@@ -37,10 +43,14 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Update a task
+// Update a task (only if owned by user)
 router.put('/:id', async (req, res) => {
   try {
-    const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedTask = await Task.findOneAndUpdate(
+      { _id: req.params.id, owner: req.user._id },
+      req.body,
+      { new: true }
+    );
     if (!updatedTask) {
       return res.status(404).json({ message: 'Task not found' });
     }
@@ -50,10 +60,13 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete a task
+// Delete a task (only if owned by user)
 router.delete('/:id', async (req, res) => {
   try {
-    const deletedTask = await Task.findByIdAndDelete(req.params.id);
+    const deletedTask = await Task.findOneAndDelete({ 
+      _id: req.params.id, 
+      owner: req.user._id 
+    });
     if (!deletedTask) {
       return res.status(404).json({ message: 'Task not found' });
     }

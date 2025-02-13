@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const taskRoutes = require('./routes/taskRoutes');
+const userRoutes = require('./routes/userRoutes');
 require('dotenv').config();
 
 // Connect to MongoDB
@@ -21,7 +22,8 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Routes
-app.use(taskRoutes);
+app.use('/auth', userRoutes);  // New auth routes
+app.use('/tasks', taskRoutes); // Updated task routes
 
 // Start server
 const PORT = process.env.PORT || 5000;
