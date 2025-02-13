@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
     const savedTask = await task.save();
 
     // Send the task to the second app
-    const secondAppUrl = 'https://task-calender-backend-git-main-nithin2023-creators-projects.vercel.app/tasks'; // Replace with your second app's URL
+    const secondAppUrl = 'https://task-calender-backend.vercel.app/tasks'; // Replace with your second app's URL
     await axios.post(secondAppUrl, {
       date: savedTask.dueDate.split('T')[0], // Extract the date (YYYY-MM-DD)
       category: savedTask.category || 'General', // Default category
