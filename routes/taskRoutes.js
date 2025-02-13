@@ -31,15 +31,19 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    // Forward the request to the external API
-    const response = await axios.post(
-      'https://task-calender-backend-git-main-nithin2023-creators-projects.vercel.app/tasks',
-      req.body,
-      { headers: { 'Content-Type': 'application/json' } }
-    );
+    const task = new Task(req.body);
+    const savedTask = await task.save();
 
-    // Send back the response from the external API
-    res.status(response.status).json(response.data);
+    // Send the task to the second app
+    const secondAppUrl = 'https://task-calender-backend-git-main-nithin2023-creators-projects.vercel.app/tasks'; // Replace with your second app's URL
+    await axios.post(secondAppUrl, {
+      date: savedTask.dueDate.split('T')[0], // Extract the date (YYYY-MM-DD)
+      category: savedTask.category || 'General', // Default category
+      title: savedTask.title,
+      description: savedTask.description,
+    });
+
+    res.status(201).json(savedTask);
   } catch (error) {
     res.status(500).json({
       message: 'Failed to forward request',
